@@ -17,6 +17,7 @@ import java.util.Random;
 @Service
 public class BookServiceImpl implements BookService {
     private final BookRepository bookRepository;
+
     private final BookMapper bookMapper;
 
     @Override
