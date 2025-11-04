@@ -1,8 +1,7 @@
-package mate.academy.web_intro_bookstore.repository;
+package mate.academy.webintrobookstore.repository;
 
-import mate.academy.web_intro_bookstore.model.Book;
+import mate.academy.webintrobookstore.model.Book;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface BookRepository extends JpaRepository<Book, Long> {
-
 }

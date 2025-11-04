@@ -1,4 +1,4 @@
-package mate.academy.web_intro_bookstore.exception;
+package mate.academy.webintrobookstore.exception;
 
 public class EntityBotFoundException extends RuntimeException {
     public EntityBotFoundException(String message) {

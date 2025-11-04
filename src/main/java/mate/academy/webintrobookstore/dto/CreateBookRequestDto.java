@@ -1,7 +1,7 @@
-package mate.academy.web_intro_bookstore.dto;
+package mate.academy.webintrobookstore.dto;
 
-import lombok.Data;
 import java.math.BigDecimal;
+import lombok.Data;
 
 @Data
 public class CreateBookRequestDto {
