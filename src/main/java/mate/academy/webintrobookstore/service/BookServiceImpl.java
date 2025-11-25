@@ -3,12 +3,15 @@ package mate.academy.webintrobookstore.service;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import mate.academy.webintrobookstore.dto.BookDto;
+import mate.academy.webintrobookstore.dto.BookSearchParameters;
 import mate.academy.webintrobookstore.dto.CreateBookRequestDto;
 import mate.academy.webintrobookstore.dto.UpdateBookRequestDto;
 import mate.academy.webintrobookstore.exception.EntityBotFoundException;
 import mate.academy.webintrobookstore.mapper.BookMapper;
 import mate.academy.webintrobookstore.model.Book;
-import mate.academy.webintrobookstore.repository.BookRepository;
+import mate.academy.webintrobookstore.repository.book.BookRepository;
+import mate.academy.webintrobookstore.repository.book.BooksSpecificationBuilder;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
@@ -16,6 +19,7 @@ import org.springframework.stereotype.Service;
 public class BookServiceImpl implements BookService {
     private final BookRepository bookRepository;
     private final BookMapper bookMapper;
+    private final BooksSpecificationBuilder booksSpecificationBuilder;
 
     @Override
     public BookDto save(CreateBookRequestDto requestDto) {
@@ -51,5 +55,14 @@ public class BookServiceImpl implements BookService {
         bookMapper.updateBookFromDto(updateDto, book);
         bookRepository.save(book);
         return bookMapper.toDto(book);
+    }
+
+    @Override
+    public List<BookDto> search(BookSearchParameters params) {
+        Specification<Book> bookSpecification = booksSpecificationBuilder.build(params);
+        return bookRepository.findAll(bookSpecification)
+                .stream()
+                .map(bookMapper::toDto)
+                .toList();
     }
 }

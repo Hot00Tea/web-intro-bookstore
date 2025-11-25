@@ -2,6 +2,7 @@ package mate.academy.webintrobookstore.service;
 
 import java.util.List;
 import mate.academy.webintrobookstore.dto.BookDto;
+import mate.academy.webintrobookstore.dto.BookSearchParameters;
 import mate.academy.webintrobookstore.dto.CreateBookRequestDto;
 import mate.academy.webintrobookstore.dto.UpdateBookRequestDto;
 
@@ -15,4 +16,6 @@ public interface BookService {
     void deleteById(Long id);
 
     BookDto update(Long id, UpdateBookRequestDto updateDto);
+
+    List<BookDto> search(BookSearchParameters params);
 }
