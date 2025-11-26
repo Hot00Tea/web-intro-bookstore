@@ -34,19 +34,16 @@ public class BookController {
     public BookDto findById(@PathVariable Long id) {
         return bookService.findById(id);
     }
-
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public BookDto save(@RequestBody CreateBookRequestDto requestDto) {
         return bookService.save(requestDto);
     }
-
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) {
         bookService.deleteById(id);
     }
-
     @PutMapping("/{id}")
     public BookDto update(@PathVariable Long id, @RequestBody UpdateBookRequestDto requestDto) {
         return bookService.update(id, requestDto);
