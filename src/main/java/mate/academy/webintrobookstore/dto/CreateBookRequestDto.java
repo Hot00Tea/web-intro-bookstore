@@ -7,6 +7,7 @@ import mate.academy.webintrobookstore.validation.Author;
 @Data
 public class CreateBookRequestDto {
     private String title;
+
     @Author
     private String author;
 
@@ -16,3 +17,4 @@ public class CreateBookRequestDto {
 
     private String coverImage;
 }
+

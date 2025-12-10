@@ -1,6 +1,5 @@
 package mate.academy.webintrobookstore.controller;
 
-import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import mate.academy.webintrobookstore.dto.BookDto;
