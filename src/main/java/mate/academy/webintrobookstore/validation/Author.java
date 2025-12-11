@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.PARAMETER, ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Author {
-    String massage() default "Invalid format author";
+    String message() default "Invalid format author";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 };

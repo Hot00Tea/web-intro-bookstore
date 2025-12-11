@@ -7,14 +7,13 @@ import lombok.Setter;
 
 @Setter
 public class BookDto {
-    @NotNull
+
     private String title;
-    @NotNull
+
     private String author;
 
     private String isbn;
-    @NotNull
-    @Min(0)
+
     private BigDecimal price;
 
     private String description;
