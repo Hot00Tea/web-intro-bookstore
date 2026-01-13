@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import mate.academy.webintrobookstore.dto.BookDto;
 import mate.academy.webintrobookstore.dto.BookSearchParameters;
 import mate.academy.webintrobookstore.dto.CreateBookRequestDto;
-import mate.academy.webintrobookstore.dto.UpdateBookRequestDto;
 import mate.academy.webintrobookstore.service.BookService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -50,7 +49,8 @@ public class BookController {
 
     @PutMapping("/{id}")
     public BookDto update(@PathVariable Long id,
-                          @RequestBody @Valid UpdateBookRequestDto requestDto) {
+                          @RequestBody @Valid CreateBookRequestDto requestDto
+    ) {
         return bookService.update(id, requestDto);
     }
 
