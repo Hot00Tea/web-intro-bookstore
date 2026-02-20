@@ -1,12 +1,12 @@
-package mate.academy.webintrobookstore.service.User;
+package mate.academy.webintrobookstore.service.user;
 
 import lombok.RequiredArgsConstructor;
-import mate.academy.spring_security.dto.UserRegistrationRequestDto;
-import mate.academy.spring_security.dto.UserResponseDto;
-import mate.academy.spring_security.exception.RegistrationException;
-import mate.academy.spring_security.mapper.UserMapper;
-import mate.academy.spring_security.model.User;
-import mate.academy.spring_security.repository.UserRepository;
+import mate.academy.webintrobookstore.dto.UserRegistrationRequestDto;
+import mate.academy.webintrobookstore.dto.UserResponseDto;
+import mate.academy.webintrobookstore.exception.RegistrationException;
+import mate.academy.webintrobookstore.mapper.UserMapper;
+import mate.academy.webintrobookstore.model.User;
+import mate.academy.webintrobookstore.repository.user.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -21,7 +21,8 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
 
     @Override
-    public UserResponseDto register(UserRegistrationRequestDto request) throws RegistrationException {
+    public UserResponseDto register(UserRegistrationRequestDto request)
+            throws RegistrationException {
         if (userRepository.existsByEmailIgnoreCase(request.getEmail())) {
             throw new RegistrationException("User with this email already exist");
         }

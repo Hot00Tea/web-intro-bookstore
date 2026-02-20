@@ -1,8 +1,7 @@
-package mate.academy.webintrobookstore.validation.Field;
+package mate.academy.webintrobookstore.validation.field;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-
 import java.lang.reflect.Field;
 import java.util.Objects;
 

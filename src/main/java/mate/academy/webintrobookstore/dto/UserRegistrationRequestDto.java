@@ -4,7 +4,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
-import mate.academy.spring_security.validation.FieldMatch;
+import mate.academy.webintrobookstore.validation.field.FieldMatch;
 
 @Getter
 @Setter
@@ -15,7 +15,7 @@ import mate.academy.spring_security.validation.FieldMatch;
 public class UserRegistrationRequestDto {
 
     @NotBlank
-    @Email
+    @Email(message = "Email is not valid")
     private String email;
 
     @NotBlank
