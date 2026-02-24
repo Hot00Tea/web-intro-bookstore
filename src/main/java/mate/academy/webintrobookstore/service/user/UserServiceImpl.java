@@ -15,22 +15,21 @@ import org.springframework.stereotype.Service;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-
     private final UserMapper userMapper;
-
     private final PasswordEncoder passwordEncoder;
 
     @Override
     public UserResponseDto register(UserRegistrationRequestDto request) {
 
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RegistrationException("User with this email already exist");
+            throw new RegistrationException("User with email "
+                    + request.getEmail()
+                    + " already exists");
         }
 
         User user = userMapper.toEntity(request);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user = userRepository.save(user);
-
         return userMapper.toDto(user);
     }
 }
