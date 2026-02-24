@@ -2,8 +2,8 @@ package mate.academy.webintrobookstore.validation.field;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import java.lang.reflect.Field;
 import java.util.Objects;
+import org.springframework.beans.BeanWrapperImpl;
 
 public class FieldMatchValidator implements ConstraintValidator<FieldMatch, Object> {
 
@@ -17,22 +17,16 @@ public class FieldMatchValidator implements ConstraintValidator<FieldMatch, Obje
     }
 
     @Override
-    public boolean isValid(Object o, ConstraintValidatorContext constraintValidatorContext) {
-
-        if (o == null) {
+    public boolean isValid(Object value, ConstraintValidatorContext context) {
+        if (value == null) {
             return true;
         }
 
-        try {
-            Field first = o.getClass().getDeclaredField(firstField);
-            Field second = o.getClass().getDeclaredField(secondField);
-            first.setAccessible(true);
-            second.setAccessible(true);
-            Object firstValue = first.get(o);
-            Object secondValue = second.get(o);
-            return Objects.equals(firstValue, secondValue);
-        } catch (Exception e) {
-            return false;
-        }
+        BeanWrapperImpl wrapper = new BeanWrapperImpl(value);
+
+        Object firstValue = wrapper.getPropertyValue(firstField);
+        Object secondValue = wrapper.getPropertyValue(secondField);
+
+        return Objects.equals(firstValue, secondValue);
     }
 }
