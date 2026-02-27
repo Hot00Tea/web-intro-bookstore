@@ -21,6 +21,9 @@ public class CreateBookRequestDto {
     @DecimalMin("0.01")
     private BigDecimal price;
 
+    @NotBlank
+    private String isbn;
+
     private String description;
 
     private String coverImage;
