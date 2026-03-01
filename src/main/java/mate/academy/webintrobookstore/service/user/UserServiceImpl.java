@@ -1,11 +1,15 @@
 package mate.academy.webintrobookstore.service.user;
 
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import mate.academy.webintrobookstore.dto.UserRegistrationRequestDto;
 import mate.academy.webintrobookstore.dto.UserResponseDto;
 import mate.academy.webintrobookstore.exception.RegistrationException;
 import mate.academy.webintrobookstore.mapper.UserMapper;
+import mate.academy.webintrobookstore.model.Role;
+import mate.academy.webintrobookstore.model.RoleName;
 import mate.academy.webintrobookstore.model.User;
+import mate.academy.webintrobookstore.repository.user.RoleRepository;
 import mate.academy.webintrobookstore.repository.user.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -17,6 +21,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final RoleRepository roleRepository;
 
     @Override
     public UserResponseDto register(UserRegistrationRequestDto request) {
@@ -29,6 +34,9 @@ public class UserServiceImpl implements UserService {
 
         User user = userMapper.toEntity(request);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+        Role userRole = roleRepository.findByName(RoleName.ROLE_USER)
+                .orElseThrow(() -> new RegistrationException("Role not found"));
+        user.setRoles(Set.of(userRole));
         user = userRepository.save(user);
         return userMapper.toDto(user);
     }
