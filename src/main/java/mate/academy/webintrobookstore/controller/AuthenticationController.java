@@ -11,13 +11,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthenticationController {
 
     private final UserService userService;
 
-    @PostMapping("/registration")
+    @PostMapping("/register")
     public UserResponseDto registration(@Valid @RequestBody UserRegistrationRequestDto request) {
         return userService.register(request);
     }
