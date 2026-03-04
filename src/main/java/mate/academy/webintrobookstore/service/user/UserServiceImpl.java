@@ -1,5 +1,6 @@
 package mate.academy.webintrobookstore.service.user;
 
+import jakarta.persistence.EntityNotFoundException;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import mate.academy.webintrobookstore.dto.UserRegistrationRequestDto;
@@ -35,7 +36,8 @@ public class UserServiceImpl implements UserService {
         User user = userMapper.toEntity(request);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         Role userRole = roleRepository.findByName(RoleName.ROLE_USER)
-                .orElseThrow(() -> new RegistrationException("Role not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Role: "
+                        + RoleName.ROLE_USER + "not found"));
         user.setRoles(Set.of(userRole));
         user = userRepository.save(user);
         return userMapper.toDto(user);
