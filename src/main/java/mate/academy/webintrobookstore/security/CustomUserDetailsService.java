@@ -1,5 +1,6 @@
 package mate.academy.webintrobookstore.security;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import mate.academy.webintrobookstore.repository.user.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -14,8 +15,17 @@ public class CustomUserDetailsService implements UserDetailsService {
     private final UserRepository userRepository;
 
     @Override
+    @Transactional
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("Can't find by email: " + email));
+        var user = userRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new UsernameNotFoundException("Can't find by email: " + email)
+                );
+
+        return new org.springframework.security.core.userdetails.User(
+                user.getEmail(),
+                user.getPassword(),
+                user.getRoles()
+        );
     }
 }

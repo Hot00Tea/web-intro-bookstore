@@ -2,8 +2,11 @@ package mate.academy.webintrobookstore.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import mate.academy.webintrobookstore.dto.UserLoginRequestDto;
+import mate.academy.webintrobookstore.dto.UserLoginResponseDto;
 import mate.academy.webintrobookstore.dto.UserRegistrationRequestDto;
 import mate.academy.webintrobookstore.dto.UserResponseDto;
+import mate.academy.webintrobookstore.service.user.AuthenticationService;
 import mate.academy.webintrobookstore.service.user.UserService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,8 +20,15 @@ public class AuthenticationController {
 
     private final UserService userService;
 
+    private final AuthenticationService authenticationService;
+
     @PostMapping("/registration")
     public UserResponseDto registration(@Valid @RequestBody UserRegistrationRequestDto request) {
         return userService.register(request);
+    }
+
+    @PostMapping("/login")
+    public UserLoginResponseDto login(@Valid @RequestBody UserLoginRequestDto requestDto) {
+        return authenticationService.authenticate(requestDto);
     }
 }
