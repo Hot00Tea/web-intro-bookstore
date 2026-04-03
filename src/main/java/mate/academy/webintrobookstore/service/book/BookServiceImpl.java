@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import mate.academy.webintrobookstore.dto.BookDto;
 import mate.academy.webintrobookstore.dto.BookSearchParameters;
 import mate.academy.webintrobookstore.dto.CreateBookRequestDto;
-import mate.academy.webintrobookstore.exception.EntityBotFoundException;
+import mate.academy.webintrobookstore.exception.EntityNotFoundException;
 import mate.academy.webintrobookstore.mapper.BookMapper;
 import mate.academy.webintrobookstore.model.Book;
 import mate.academy.webintrobookstore.repository.book.BookRepository;
@@ -37,7 +37,7 @@ public class BookServiceImpl implements BookService {
     @Override
     public BookDto findById(Long id) {
         Book book = bookRepository.findById(id).orElseThrow(
-                () -> new EntityBotFoundException("Can't find book by id: " + id)
+                () -> new EntityNotFoundException("Can't find book by id: " + id)
         );
         return bookMapper.toDto(book);
     }
@@ -50,7 +50,7 @@ public class BookServiceImpl implements BookService {
     @Override
     public BookDto update(Long id, CreateBookRequestDto updateDto) {
         Book book = bookRepository.findById(id)
-                .orElseThrow(() -> new EntityBotFoundException("Book not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Book not found with id: " + id));
 
         bookMapper.updateBookFromDto(updateDto, book);
         bookRepository.save(book);
