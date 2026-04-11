@@ -1,8 +1,7 @@
 package mate.academy.webintrobookstore.service.category;
 
-import java.util.List;
-
 import jakarta.transaction.Transactional;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import mate.academy.webintrobookstore.dto.BookDtoWithoutCategoryIds;
 import mate.academy.webintrobookstore.dto.CategoryDto;
