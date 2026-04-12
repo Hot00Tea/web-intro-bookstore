@@ -5,18 +5,14 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
-import java.util.Set;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 
 @Getter
 @Setter
 @Entity
-@Table(name = "category")
+@Table(name = "categories")
 public class Category {
 
     @Id
@@ -28,9 +24,4 @@ public class Category {
 
     @Column(columnDefinition = "TEXT")
     private String description;
-
-    @ManyToMany(mappedBy = "categories")
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    private Set<Book> books;
 }
