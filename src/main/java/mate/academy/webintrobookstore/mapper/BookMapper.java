@@ -2,6 +2,7 @@ package mate.academy.webintrobookstore.mapper;
 
 import mate.academy.webintrobookstore.config.MapperConfig;
 import mate.academy.webintrobookstore.dto.BookDto;
+import mate.academy.webintrobookstore.dto.BookDtoWithoutCategoryIds;
 import mate.academy.webintrobookstore.dto.CreateBookRequestDto;
 import mate.academy.webintrobookstore.model.Book;
 import org.mapstruct.Mapper;
@@ -14,4 +15,6 @@ public interface BookMapper {
     Book toModel(CreateBookRequestDto requestDto);
 
     void updateBookFromDto(CreateBookRequestDto updateDto, @MappingTarget Book book);
+
+    BookDtoWithoutCategoryIds toDtoWithoutCategories(Book book);
 }
