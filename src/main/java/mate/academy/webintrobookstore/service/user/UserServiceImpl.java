@@ -9,13 +9,13 @@ import mate.academy.webintrobookstore.exception.RegistrationException;
 import mate.academy.webintrobookstore.mapper.UserMapper;
 import mate.academy.webintrobookstore.model.Role;
 import mate.academy.webintrobookstore.model.RoleName;
+import mate.academy.webintrobookstore.model.ShoppingCart;
 import mate.academy.webintrobookstore.model.User;
+import mate.academy.webintrobookstore.repository.shoppingcart.ShoppingCartRepository;
 import mate.academy.webintrobookstore.repository.user.RoleRepository;
 import mate.academy.webintrobookstore.repository.user.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import mate.academy.webintrobookstore.model.ShoppingCart;
-import mate.academy.webintrobookstore.repository.shoppingcart.ShoppingCartRepository;
 
 @Service
 @RequiredArgsConstructor
