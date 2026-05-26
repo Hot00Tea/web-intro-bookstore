@@ -14,6 +14,8 @@ import mate.academy.webintrobookstore.repository.user.RoleRepository;
 import mate.academy.webintrobookstore.repository.user.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import mate.academy.webintrobookstore.model.ShoppingCart;
+import mate.academy.webintrobookstore.repository.shoppingcart.ShoppingCartRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +25,7 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
+    private final ShoppingCartRepository shoppingCartRepository;
 
     @Override
     public UserResponseDto register(UserRegistrationRequestDto request) {
@@ -40,6 +43,16 @@ public class UserServiceImpl implements UserService {
                         + RoleName.ROLE_USER + "not found"));
         user.setRoles(Set.of(userRole));
         user = userRepository.save(user);
+        ShoppingCart shoppingCart = new ShoppingCart();
+        shoppingCart.setUser(user);
+        shoppingCartRepository.save(shoppingCart);
         return userMapper.toDto(user);
+    }
+
+    @Override
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email).orElseThrow(
+                () -> new EntityNotFoundException("Can`t find user by email: " + email)
+        );
     }
 }
