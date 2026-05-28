@@ -1,7 +1,7 @@
 package mate.academy.webintrobookstore.dto;
 
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,10 +10,9 @@ import lombok.Setter;
 public class AddBookToCartRequestDto {
 
     @NotNull
+    @Positive
     private Long bookId;
 
-    @NotNull
-    @Min(value = 1)
-    private Integer quantity;
-
+    @Positive
+    private int quantity;
 }

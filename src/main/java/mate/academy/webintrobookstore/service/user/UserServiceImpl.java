@@ -1,6 +1,7 @@
 package mate.academy.webintrobookstore.service.user;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import mate.academy.webintrobookstore.dto.UserRegistrationRequestDto;
@@ -9,15 +10,16 @@ import mate.academy.webintrobookstore.exception.RegistrationException;
 import mate.academy.webintrobookstore.mapper.UserMapper;
 import mate.academy.webintrobookstore.model.Role;
 import mate.academy.webintrobookstore.model.RoleName;
-import mate.academy.webintrobookstore.model.ShoppingCart;
 import mate.academy.webintrobookstore.model.User;
 import mate.academy.webintrobookstore.repository.shoppingcart.ShoppingCartRepository;
 import mate.academy.webintrobookstore.repository.user.RoleRepository;
 import mate.academy.webintrobookstore.repository.user.UserRepository;
+import mate.academy.webintrobookstore.service.shoppingcart.ShoppingCartService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
@@ -26,6 +28,7 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
     private final ShoppingCartRepository shoppingCartRepository;
+    private final ShoppingCartService shoppingCartService;
 
     @Override
     public UserResponseDto register(UserRegistrationRequestDto request) {
@@ -43,16 +46,7 @@ public class UserServiceImpl implements UserService {
                         + RoleName.ROLE_USER + "not found"));
         user.setRoles(Set.of(userRole));
         user = userRepository.save(user);
-        ShoppingCart shoppingCart = new ShoppingCart();
-        shoppingCart.setUser(user);
-        shoppingCartRepository.save(shoppingCart);
+        shoppingCartService.createShoppingCart(user);
         return userMapper.toDto(user);
-    }
-
-    @Override
-    public User findByEmail(String email) {
-        return userRepository.findByEmail(email).orElseThrow(
-                () -> new EntityNotFoundException("Can`t find user by email: " + email)
-        );
     }
 }
