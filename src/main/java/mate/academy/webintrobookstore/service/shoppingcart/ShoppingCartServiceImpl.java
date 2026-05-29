@@ -116,19 +116,4 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
                 () -> new EntityNotFoundException(
                         "Can't find shopping cart for user id: " + userId));
     }
-
-    private CartItem getCartItemOrThrow(Long cartItemId) {
-        return cartItemRepository.findById(cartItemId).orElseThrow(
-                () -> new EntityNotFoundException(
-                        "Can't find cart item by id: " + cartItemId)
-        );
-    }
-
-    private void validateOwnership(CartItem cartItem, Long userId) {
-        Long ownerUserId = cartItem.getShoppingCart().getUser().getId();
-        if (!ownerUserId.equals(userId)) {
-            throw new IllegalArgumentException(
-                    "User does not have access");
-        }
-    }
 }

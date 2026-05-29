@@ -9,5 +9,5 @@ import lombok.Setter;
 public class UpdateCartItemRequestDto {
 
     @Positive
-    private Integer quantity;
+    private int quantity;
 }
