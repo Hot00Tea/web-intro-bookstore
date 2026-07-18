@@ -37,24 +37,6 @@ public class OrderServiceImpl implements OrderService {
     private final UserRepository userRepository;
     private final OrderMapper orderMapper;
 
-    private Order buildOrder(User user, CreateOrderRequestDto requestDto) {
-        Order order = new Order();
-        order.setUser(user);
-        order.setShippingAddress(requestDto.getShippingAddress());
-        order.setStatus(Status.PENDING);
-        order.setOrderDate(LocalDateTime.now());
-        return order;
-    }
-
-    private OrderItem createOrderItem(Order order, CartItem cartItem) {
-        OrderItem orderItem = new OrderItem();
-        orderItem.setOrder(order);
-        orderItem.setBook(cartItem.getBook());
-        orderItem.setQuantity(cartItem.getQuantity());
-        orderItem.setPrice(cartItem.getBook().getPrice());
-        return orderItem;
-    }
-
     @Override
     public OrderResponseDto createOrder(Long userId, CreateOrderRequestDto requestDto) {
 
@@ -68,7 +50,9 @@ public class OrderServiceImpl implements OrderService {
         );
 
         if (shoppingCart.getCartItems().isEmpty()) {
-            throw new OrderCreationException("Shopping cart is empty");
+            throw new OrderCreationException("Can't create order because "
+                    +
+                    "shopping cart is empty for user id: " + userId);
         }
 
         Order order = buildOrder(user, requestDto);
@@ -137,5 +121,23 @@ public class OrderServiceImpl implements OrderService {
         );
 
         return orderMapper.toDto(orderItem);
+    }
+
+    private Order buildOrder(User user, CreateOrderRequestDto requestDto) {
+        Order order = new Order();
+        order.setUser(user);
+        order.setShippingAddress(requestDto.getShippingAddress());
+        order.setStatus(Status.PENDING);
+        order.setOrderDate(LocalDateTime.now());
+        return order;
+    }
+
+    private OrderItem createOrderItem(Order order, CartItem cartItem) {
+        OrderItem orderItem = new OrderItem();
+        orderItem.setOrder(order);
+        orderItem.setBook(cartItem.getBook());
+        orderItem.setQuantity(cartItem.getQuantity());
+        orderItem.setPrice(cartItem.getBook().getPrice());
+        return orderItem;
     }
 }

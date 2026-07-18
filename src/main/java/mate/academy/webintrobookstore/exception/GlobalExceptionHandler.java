@@ -33,4 +33,14 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
     }
+
+    @ExceptionHandler(OrderCreationException.class)
+    public ResponseEntity<Map<String, String>> handleOrderCreationException(
+            OrderCreationException e) {
+
+        Map<String, String> error = new HashMap<>();
+        error.put("error", e.getMessage());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
 }

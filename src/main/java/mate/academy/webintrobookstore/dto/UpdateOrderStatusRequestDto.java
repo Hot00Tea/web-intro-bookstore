@@ -1,14 +1,12 @@
 package mate.academy.webintrobookstore.dto;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 import mate.academy.webintrobookstore.model.Status;
 
-@Setter
-@Getter
 @Data
 public class UpdateOrderStatusRequestDto {
 
+    @NotNull
     private Status status;
 }
