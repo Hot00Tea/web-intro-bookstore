@@ -4,10 +4,22 @@ import java.util.List;
 import java.util.Optional;
 import mate.academy.webintrobookstore.model.OrderItem;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
 
+    @Query("""
+    SELECT oi
+    FROM OrderItem oi
+    JOIN FETCH oi.book
+    WHERE oi.order.id = :orderId""")
     List<OrderItem> findByOrderId(Long orderId);
 
+    @Query("""
+    SELECT oi
+    FROM OrderItem oi
+    JOIN FETCH oi.book
+    WHERE oi.id = :id
+      AND oi.order.id = :orderId""")
     Optional<OrderItem> findByIdAndOrderId(Long id, Long orderId);
 }
