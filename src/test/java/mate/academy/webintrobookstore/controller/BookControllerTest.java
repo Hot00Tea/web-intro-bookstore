@@ -1,26 +1,52 @@
 package mate.academy.webintrobookstore.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import mate.academy.webintrobookstore.dto.BookDto;
+import jakarta.servlet.ServletException;
 import mate.academy.webintrobookstore.dto.CreateBookRequestDto;
+import mate.academy.webintrobookstore.exception.EntityNotFoundException;
 import mate.academy.webintrobookstore.security.JwtUtil;
-import mate.academy.webintrobookstore.service.book.BookService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+
 import java.math.BigDecimal;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(BookController.class)
+@AutoConfigureMockMvc
+@Testcontainers
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Sql(scripts = {
+        "classpath:database/create/add-default-categories.sql",
+        "classpath:database/create/add-default-books.sql",
+        "classpath:database/create/add-into-books-categories-table.sql"
+})
+@Sql(
+        scripts = {
+                "classpath:database/delete/delete-books-categories-table.sql",
+                "classpath:database/delete/delete-all-books.sql",
+                "classpath:database/delete/delete-all-categories.sql"
+        },
+        executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD
+)
 class BookControllerTest {
 
     @Autowired
@@ -30,77 +56,243 @@ class BookControllerTest {
     private ObjectMapper objectMapper;
 
     @MockitoBean
-    private BookService bookService;
-
-    @MockitoBean
     private JwtUtil jwtUtil;
+
+    @Container
+    static MySQLContainer<?> mysql = new MySQLContainer<>("mysql:8.4");
+
+    @DynamicPropertySource
+    static void configureProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", mysql::getJdbcUrl);
+        registry.add("spring.datasource.username", mysql::getUsername);
+        registry.add("spring.datasource.password", mysql::getPassword);
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    void findAll_shouldReturnBooks() throws Exception {
+        mockMvc.perform(get("/books"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content[0].id").value(1))
+                .andExpect(jsonPath("$.content[0].title")
+                        .value("Harry Potter"))
+                .andExpect(jsonPath("$.content[0].author")
+                        .value("J.K. Rowling"))
+                .andExpect(jsonPath("$.content[0].isbn")
+                        .value("978-1234567890"))
+                .andExpect(jsonPath("$.content[0].price")
+                        .value(25.99))
+                .andExpect(jsonPath("$.content[0].description")
+                        .value("Fantasy book"));
+    }
+
+    @Test
+    void findAll_withoutUserRole_shouldReturnForbidden()
+            throws Exception {
+        mockMvc.perform(get("/books"))
+                .andExpect(status().isForbidden());
+    }
 
     @Test
     @WithMockUser(roles = "USER")
     void findById_shouldReturnBook() throws Exception {
-
-        BookDto bookDto = new BookDto();
-        bookDto.setId(1L);
-        bookDto.setTitle("Harry Potter");
-        bookDto.setAuthor("J.K. Rowling");
-        bookDto.setIsbn("978-1234567890");
-        bookDto.setPrice(BigDecimal.valueOf(25.99));
-        bookDto.setDescription("Fantasy book");
-
-        when(bookService.findById(1L))
-                .thenReturn(bookDto);
-
         mockMvc.perform(get("/books/1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1L))
-                .andExpect(jsonPath("$.title").value("Harry Potter"))
-                .andExpect(jsonPath("$.author").value("J.K. Rowling"))
-                .andExpect(jsonPath("$.isbn").value("978-1234567890"))
-                .andExpect(jsonPath("$.price").value(BigDecimal.valueOf(25.99)))
-                .andExpect(jsonPath("$.description").value("Fantasy book"));
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.title")
+                        .value("Harry Potter"))
+                .andExpect(jsonPath("$.author")
+                        .value("J.K. Rowling"))
+                .andExpect(jsonPath("$.isbn")
+                        .value("978-1234567890"))
+                .andExpect(jsonPath("$.price")
+                        .value(25.99))
+                .andExpect(jsonPath("$.description")
+                        .value("Fantasy book"));
+    }
 
-        verify(bookService).findById(1L);
+    @Test
+    @WithMockUser(roles = "USER")
+    void findById_withNonExistentId_shouldThrowException()
+            throws Exception {
+        ServletException exception = org.junit.jupiter.api.Assertions
+                .assertThrows(
+                        ServletException.class,
+                        () -> mockMvc.perform(get("/books/999"))
+                );
+
+        assertTrue(
+                exception.getCause() instanceof EntityNotFoundException
+        );
     }
 
     @Test
     @WithMockUser(roles = "ADMIN")
     void createBook_shouldReturnCreatedBook() throws Exception {
+        CreateBookRequestDto requestDto = new CreateBookRequestDto();
 
-        CreateBookRequestDto createBookRequestDto = new CreateBookRequestDto();
-        createBookRequestDto.setTitle("Harry Potter");
-        createBookRequestDto.setAuthor("JK Rowling");
-        createBookRequestDto.setIsbn("978-1234567890");
-        createBookRequestDto.setPrice(BigDecimal.valueOf(25.99));
-        createBookRequestDto.setDescription("Fantasy book");
+        requestDto.setTitle("The Lord of the Rings");
+        requestDto.setAuthor("JRR Tolkien");
+        requestDto.setIsbn("978-9876543210");
+        requestDto.setPrice(BigDecimal.valueOf(30.99));
+        requestDto.setDescription("Fantasy book");
 
-        BookDto bookDto = new BookDto();
-        bookDto.setTitle("Harry Potter");
-        bookDto.setAuthor("JK Rowling");
-        bookDto.setIsbn("978-1234567890");
-        bookDto.setPrice(BigDecimal.valueOf(25.99));
-        bookDto.setDescription("Fantasy book");
-
-        when(bookService.save(createBookRequestDto)).thenReturn(bookDto);
-
-        mockMvc.perform(post("/books").with(csrf()).contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(createBookRequestDto)))
+        mockMvc.perform(
+                        post("/books")
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(
+                                        requestDto
+                                ))
+                )
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.title").value("Harry Potter"))
-                .andExpect(jsonPath("$.author").value("JK Rowling"))
-                .andExpect(jsonPath("$.isbn").value("978-1234567890"))
-                .andExpect(jsonPath("$.price").value(BigDecimal.valueOf(25.99)))
-                .andExpect(jsonPath("$.description").value("Fantasy book"));
+                .andExpect(jsonPath("$.id").exists())
+                .andExpect(jsonPath("$.title")
+                        .value("The Lord of the Rings"))
+                .andExpect(jsonPath("$.author")
+                        .value("JRR Tolkien"))
+                .andExpect(jsonPath("$.isbn")
+                        .value("978-9876543210"))
+                .andExpect(jsonPath("$.price")
+                        .value(30.99))
+                .andExpect(jsonPath("$.description")
+                        .value("Fantasy book"));
+    }
 
-        verify(bookService).save(createBookRequestDto);
+    @Test
+    @WithMockUser(roles = "USER")
+    void createBook_withoutAdminRole_shouldReturnForbidden()
+            throws Exception {
+        CreateBookRequestDto requestDto = new CreateBookRequestDto();
+
+        requestDto.setTitle("The Lord of the Rings");
+        requestDto.setAuthor("JRR Tolkien");
+        requestDto.setIsbn("978-9876543210");
+        requestDto.setPrice(BigDecimal.valueOf(30.99));
+        requestDto.setDescription("Fantasy book");
+
+        mockMvc.perform(
+                        post("/books")
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(
+                                        requestDto
+                                ))
+                )
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void createBook_withInvalidData_shouldReturnBadRequest()
+            throws Exception {
+        CreateBookRequestDto requestDto = new CreateBookRequestDto();
+
+        mockMvc.perform(
+                        post("/books")
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(
+                                        requestDto
+                                ))
+                )
+                .andExpect(status().isBadRequest());
     }
 
     @Test
     @WithMockUser(roles = "ADMIN")
     void deleteBook_shouldReturnNoContent() throws Exception {
-
-        mockMvc.perform(delete("/books/1").with(csrf()))
+        mockMvc.perform(
+                        delete("/books/1")
+                                .with(csrf())
+                )
                 .andExpect(status().isNoContent());
+    }
 
-        verify(bookService).deleteById(1L);
+    @Test
+    @WithMockUser(roles = "USER")
+    void deleteBook_withoutAdminRole_shouldReturnForbidden()
+            throws Exception {
+        mockMvc.perform(
+                        delete("/books/1")
+                                .with(csrf())
+                )
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void updateBook_shouldReturnUpdatedBook() throws Exception {
+        CreateBookRequestDto requestDto = new CreateBookRequestDto();
+
+        requestDto.setTitle(
+                "Harry Potter and the Chamber of Secrets"
+        );
+        requestDto.setAuthor("JRR Rowling");
+        requestDto.setIsbn("978-1111111111");
+        requestDto.setPrice(BigDecimal.valueOf(29.99));
+        requestDto.setDescription("Updated fantasy book");
+
+        mockMvc.perform(
+                        put("/books/1")
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(
+                                        requestDto
+                                ))
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.title")
+                        .value(
+                                "Harry Potter and the Chamber of Secrets"
+                        ))
+                .andExpect(jsonPath("$.author")
+                        .value("JRR Rowling"))
+                .andExpect(jsonPath("$.isbn")
+                        .value("978-1111111111"))
+                .andExpect(jsonPath("$.price")
+                        .value(29.99))
+                .andExpect(jsonPath("$.description")
+                        .value("Updated fantasy book"));
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    void updateBook_withoutAdminRole_shouldReturnForbidden()
+            throws Exception {
+        CreateBookRequestDto requestDto = new CreateBookRequestDto();
+
+        requestDto.setTitle("Updated Book");
+        requestDto.setAuthor("JRR Rowling");
+        requestDto.setIsbn("978-2222222222");
+        requestDto.setPrice(BigDecimal.valueOf(29.99));
+        requestDto.setDescription("Updated book");
+
+        mockMvc.perform(
+                        put("/books/1")
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(
+                                        requestDto
+                                ))
+                )
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    void search_shouldReturnBooks() throws Exception {
+        mockMvc.perform(get("/books/search"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$[0].id").value(1))
+                .andExpect(jsonPath("$[0].title")
+                        .value("Harry Potter"))
+                .andExpect(jsonPath("$[0].author")
+                        .value("J.K. Rowling"))
+                .andExpect(jsonPath("$[0].isbn")
+                        .value("978-1234567890"));
     }
 }
