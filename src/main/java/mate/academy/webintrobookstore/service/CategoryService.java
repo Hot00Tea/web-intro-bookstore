@@ -1,4 +1,4 @@
-package mate.academy.webintrobookstore.service.category;
+package mate.academy.webintrobookstore.service;
 
 import java.util.List;
 import mate.academy.webintrobookstore.dto.BookDtoWithoutCategoryIds;
