@@ -12,10 +12,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -66,7 +62,7 @@ public class BookServiceTest {
         when(bookMapper.toDto(book))
                 .thenReturn(expected);
 
-        BookDto result = bookService.findById(1L);
+        BookDto result = bookService.getBookById(1L);
 
         assertEquals(expected, result);
 
@@ -81,7 +77,7 @@ public class BookServiceTest {
 
         assertThrows(
                 EntityNotFoundException.class,
-                () -> bookService.findById(999L)
+                () -> bookService.getBookById(999L)
         );
 
         verify(bookRepository).findById(999L);
@@ -121,7 +117,7 @@ public class BookServiceTest {
         when(bookMapper.toDto(book))
                 .thenReturn(expected);
 
-        BookDto result = bookService.save(requestDto);
+        BookDto result = bookService.createBook(requestDto);
 
         assertEquals(expected, result);
 
@@ -139,8 +135,6 @@ public class BookServiceTest {
 
     @Test
     void findAll_shouldReturnBookDto() {
-        Pageable pageable = PageRequest.of(0, 10);
-
         Book book = new Book();
         book.setId(1L);
         book.setTitle("Harry Potter");
@@ -152,8 +146,6 @@ public class BookServiceTest {
         List<Book> bookList = new ArrayList<>();
         bookList.add(book);
 
-        Page<Book> bookPage = new PageImpl<>(bookList);
-
         BookDto expected = new BookDto();
         expected.setId(1L);
         expected.setTitle("Harry Potter");
@@ -162,18 +154,18 @@ public class BookServiceTest {
         expected.setPrice(BigDecimal.valueOf(25.99));
         expected.setDescription("Fantasy book");
 
-        when(bookRepository.findAll(pageable))
-                .thenReturn(bookPage);
+        when(bookRepository.findAll())
+                .thenReturn(bookList);
 
         when(bookMapper.toDto(book))
                 .thenReturn(expected);
 
-        Page<BookDto> result = bookService.findAll(pageable);
+        List<BookDto> result = bookService.getAll();
 
-        assertEquals(1, result.getTotalElements());
-        assertEquals(expected, result.getContent().get(0));
+        assertEquals(1, result.size());
+        assertEquals(expected, result.get(0));
 
-        verify(bookRepository).findAll(pageable);
+        verify(bookRepository).findAll();
         verify(bookMapper).toDto(book);
     }
 

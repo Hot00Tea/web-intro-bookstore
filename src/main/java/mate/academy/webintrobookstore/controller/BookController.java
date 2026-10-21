@@ -9,8 +9,6 @@ import mate.academy.webintrobookstore.dto.BookDto;
 import mate.academy.webintrobookstore.dto.BookSearchParameters;
 import mate.academy.webintrobookstore.dto.CreateBookRequestDto;
 import mate.academy.webintrobookstore.service.book.BookService;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -34,22 +32,22 @@ public class BookController {
     @PreAuthorize("hasRole('USER')")
     @GetMapping
     @Operation(summary = "Get all books", description = "Get a list of all available books")
-    public Page<BookDto> findAll(Pageable pageable) {
-        return bookService.findAll(pageable);
+    public List<BookDto> getAll() {
+        return bookService.getAll();
     }
 
     @PreAuthorize("hasRole('USER')")
     @GetMapping("/{id}")
-    public BookDto findById(@PathVariable Long id) {
-        return bookService.findById(id);
+    public BookDto getBookById(@PathVariable Long id) {
+        return bookService.getBookById(id);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Create a new book", description = "Create a new book")
-    public BookDto save(@RequestBody @Valid CreateBookRequestDto requestDto) {
-        return bookService.save(requestDto);
+    public BookDto createBook(@RequestBody @Valid CreateBookRequestDto requestDto) {
+        return bookService.createBook(requestDto);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
