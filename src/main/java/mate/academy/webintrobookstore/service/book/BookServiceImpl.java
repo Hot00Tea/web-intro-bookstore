@@ -10,8 +10,6 @@ import mate.academy.webintrobookstore.mapper.BookMapper;
 import mate.academy.webintrobookstore.model.Book;
 import mate.academy.webintrobookstore.repository.book.BookRepository;
 import mate.academy.webintrobookstore.repository.book.BooksSpecificationBuilder;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -23,19 +21,21 @@ public class BookServiceImpl implements BookService {
     private final BooksSpecificationBuilder booksSpecificationBuilder;
 
     @Override
-    public BookDto save(CreateBookRequestDto requestDto) {
+    public BookDto createBook(CreateBookRequestDto requestDto) {
         Book book = bookMapper.toModel(requestDto);
         return bookMapper.toDto(bookRepository.save(book));
     }
 
     @Override
-    public Page<BookDto> findAll(Pageable pageable) {
-        return bookRepository.findAll(pageable)
-                .map(bookMapper::toDto);
+    public List<BookDto> getAll() {
+        return bookRepository.findAll()
+                .stream()
+                .map(bookMapper::toDto)
+                .toList();
     }
 
     @Override
-    public BookDto findById(Long id) {
+    public BookDto getBookById(Long id) {
         Book book = bookRepository.findById(id).orElseThrow(
                 () -> new EntityNotFoundException("Can't find book by id: " + id)
         );

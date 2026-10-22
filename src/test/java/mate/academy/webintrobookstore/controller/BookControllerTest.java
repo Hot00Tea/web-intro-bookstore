@@ -1,10 +1,7 @@
 package mate.academy.webintrobookstore.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.ServletException;
 import mate.academy.webintrobookstore.dto.CreateBookRequestDto;
-import mate.academy.webintrobookstore.exception.EntityNotFoundException;
-import mate.academy.webintrobookstore.security.JwtUtil;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -14,7 +11,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -22,7 +19,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.math.BigDecimal;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -34,6 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Testcontainers
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@TestPropertySource(properties = "jwt.secret=test-secret-key-for-bookstore-integration-tests")
 @Sql(scripts = {
         "classpath:database/create/add-default-categories.sql",
         "classpath:database/create/add-default-books.sql",
@@ -55,9 +52,6 @@ class BookControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @MockitoBean
-    private JwtUtil jwtUtil;
-
     @Container
     static MySQLContainer<?> mysql = new MySQLContainer<>("mysql:8.4");
 
@@ -73,17 +67,17 @@ class BookControllerTest {
     void findAll_shouldReturnBooks() throws Exception {
         mockMvc.perform(get("/books"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content").isArray())
-                .andExpect(jsonPath("$.content[0].id").value(1))
-                .andExpect(jsonPath("$.content[0].title")
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$[0].id").value(1))
+                .andExpect(jsonPath("$[0].title")
                         .value("Harry Potter"))
-                .andExpect(jsonPath("$.content[0].author")
+                .andExpect(jsonPath("$[0].author")
                         .value("J.K. Rowling"))
-                .andExpect(jsonPath("$.content[0].isbn")
+                .andExpect(jsonPath("$[0].isbn")
                         .value("978-1234567890"))
-                .andExpect(jsonPath("$.content[0].price")
+                .andExpect(jsonPath("$[0].price")
                         .value(25.99))
-                .andExpect(jsonPath("$.content[0].description")
+                .andExpect(jsonPath("$[0].description")
                         .value("Fantasy book"));
     }
 
@@ -116,15 +110,10 @@ class BookControllerTest {
     @WithMockUser(roles = "USER")
     void findById_withNonExistentId_shouldThrowException()
             throws Exception {
-        ServletException exception = org.junit.jupiter.api.Assertions
-                .assertThrows(
-                        ServletException.class,
-                        () -> mockMvc.perform(get("/books/999"))
-                );
-
-        assertTrue(
-                exception.getCause() instanceof EntityNotFoundException
-        );
+        mockMvc.perform(get("/books/999"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.errors[0]")
+                        .value("Can't find book by id: 999"));
     }
 
     @Test
